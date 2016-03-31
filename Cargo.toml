@@ -1,0 +1,8 @@
+[package]
+name = "midi_cc_convert"
+version = "0.1.0"
+authors = ["centrevillage <centrevillage@gmail.com>"]
+
+[dependencies]
+portmidi = "^0.2"
+getopts = "^0.2"
