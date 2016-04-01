@@ -1,16 +1,16 @@
 extern crate portmidi as pm;
 extern crate getopts;
 
-use std::time::Duration;
+use getopts::Options;
+use std::collections::HashMap;
+use std::env;
+use std::fs::File;
+use std::io::Read;
+use std::io::Write;
+use std::io;
 use std::sync::mpsc;
 use std::thread;
-use std::io;
-use std::io::Write;
-use std::io::Read;
-use getopts::Options;
-use std::env;
-use std::collections::HashMap;
-use std::fs::File;
+use std::time::Duration;
 
 fn print_usage(program: &str, opts: Options) {
     let brief = format!("Usage: {} CC_MAP_FILE [options]", program);
@@ -45,15 +45,54 @@ fn select_device<'a>(devices: &'a Vec<pm::DeviceInfo>, device_name: Option<Strin
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct CCMapElem {
+    pub ch: Option<u8>,
+    pub num: u8
+}
+
+struct CCMap {
+    pub map: HashMap<CCMapElem, CCMapElem>
+}
+
+
+impl CCMap {
+    pub fn new() -> CCMap {
+        CCMap {map: HashMap::new()}
+    }
+    pub fn get_cc_elem(&self, ch: u8, num: u8) -> CCMapElem {
+
+        let create_elem = |elem: &CCMapElem| {
+            if elem.ch.is_none() {
+                CCMapElem{ch: Some(ch), num: elem.num}
+            } else {
+                elem.clone()
+            }
+        };
+
+        if let Some(elem) = self.map.get(&CCMapElem{ch: Some(ch), num: num}) {
+            create_elem(elem)
+        } else if let Some(elem) = self.map.get(&CCMapElem{ch: None, num: num}) {
+            create_elem(elem)
+        } else {
+            CCMapElem{ch: Some(ch), num: num}
+        }
+    }
+
+    pub fn insert(&mut self, key: CCMapElem, value: CCMapElem) {
+        self.map.insert(key, value);
+    }
+}
+
 struct Config {
     debug: bool,
     in_device_name: Option<String>,
     out_device_name: Option<String>,
-    mapping: HashMap<u8, u8>
+    mapping: CCMap
 }
 
 impl Config {
-    fn new(mapping: HashMap<u8, u8>) -> Config {
+    fn new(mapping: CCMap) -> Config {
         Config {
             debug: false,
             in_device_name: None,
@@ -63,15 +102,33 @@ impl Config {
     }
 }
 
-fn parse_mapping(file_path: &str) -> HashMap<u8, u8> {
-    let mut mapping = HashMap::new();
+fn parse_mapping(file_path: &str) -> CCMap {
+    let mut mapping = CCMap::new();
     let mut f = File::open(file_path).unwrap();
     let mut s = String::new();
     f.read_to_string(&mut s).unwrap();
     for line in s.split("\n") {
         let key_value: Vec<&str> = line.split(',').collect();
         if key_value.len() >= 2 {
-            mapping.insert(key_value[0].to_string().trim().parse::<u8>().unwrap(), key_value[1].to_string().trim().parse::<u8>().unwrap());
+            let key = key_value[0].trim().to_string();
+            let value = key_value[1].trim().to_string();
+            let in_ch_num: Vec<&str> = key.split(':').collect();
+            let out_ch_num: Vec<&str> = value.split(':').collect();
+            if in_ch_num.len() < 2 || out_ch_num.len() < 2 {
+                continue;
+            }
+            let (in_ch, in_num) = (in_ch_num[0], in_ch_num[1]);
+            let (out_ch, out_num) = (out_ch_num[0], out_ch_num[1]);
+            mapping.insert(
+                CCMapElem {
+                    ch: in_ch.parse::<u8>().ok(),
+                    num: in_num.parse::<u8>().unwrap()
+                },
+                CCMapElem {
+                    ch: out_ch.parse::<u8>().ok(),
+                    num: out_num.parse::<u8>().unwrap()
+                }
+            );
         }
     }
     mapping
@@ -144,14 +201,19 @@ fn main() {
         let events = rx.recv().unwrap();
         for event in events {
             let new_event = match event.message.status {
-                0xB0 ... 0xBF => pm::MidiEvent {
-                                    message: pm::MidiMessage {
-                                        status: event.message.status,
-                                        data1: (config.mapping.get(&event.message.data1).unwrap_or(&event.message.data1)).clone(),
-                                        data2: event.message.data2
-                                    },
-                                    timestamp: event.timestamp
-                                 },
+                0xB0 ... 0xBF => {
+                                    let midi_cc = config.mapping.get_cc_elem(event.message.status-0xB0+1, event.message.data1);
+                                    let ch = midi_cc.ch.unwrap()-1;
+                                    pm::MidiEvent {
+                                        message: pm::MidiMessage {
+                                            status: 0xB0 + ch,
+                                            data1: midi_cc.num,
+                                            data2: event.message.data2
+                                        },
+                                        timestamp: event.timestamp
+                                     }
+                                },
+
                             _ => event.clone()
             };
             if config.debug {
