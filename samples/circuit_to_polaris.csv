@@ -1,0 +1,67 @@
+# drumB macro1 to OSC 1 TRANSPOSE
+10:46,1:22
+# drumB macro2 to OSC 2 TRANSPOSE
+10:55,1:23
+# drumB macro3 to GLIDE
+10:47,1:3
+# drumB macro4 to SWEEP SINE/SQUARE
+10:57,1:6
+# drumB macro5 to SWEEP RATE
+10:48,1:4
+# drumB macro6 to VIBRATO DELAY
+10:61,1:7
+# drumB macro7 to SUSTAIN
+10:49,1:64
+# drumB macro8 to PERFORMANCE VOLUME
+10:76,1:0
+
+# synth1 macro 1 to FILTER CUTOFF
+1:80,1:103
+# synth1 macro 2 to FILTER RESONANCE
+1:81,1:104
+# synth1 macro 3 to FILTER SWEEP DEPTH
+1:82,1:105
+# synth1 macro 4 to FILTER ENV DEPTH
+1:83,1:106
+# synth1 macro 5 to FILTER KEY TRACK
+1:84,1:107
+# synth1 macro 6 to VOL ENV ATTACK
+1:85,1:19
+# synth1 macro 7 to VOL ENV DECAY
+1:86,1:20
+# synth1 macro 8 to VOL ENV RELEASE
+1:87,1:21
+
+# synth2 macro 1 to osc1 VIBRATO
+2:80,1:24
+# synth2 macro 2 to osc2 VIBRATO
+2:81,1:25
+# synth2 macro 3 to osc2 ENV DEPTH
+2:82,1:26
+# synth2 macro 4 to DETUNE
+2:83,1:27
+# synth2 macro 5 to osc1 PULSE WIDTH
+2:84,1:96
+# synth2 macro 6 to osc2 PULSE WIDTH
+2:85,1:97
+# synth2 macro 7 to osc1 PULSE WIDTH MOD
+2:86,1:100
+# synth2 macro 8 to osc2 PULSE WIDTH MOD
+2:87,1:101
+
+# drumA macro1 to RING MOD
+10:14,1:28
+# drumA macro2 to SYNC
+10:34,1:29
+# drumA macro3 to osc1 SAWS/PULSE
+10:15,1:30
+# drumA macro4 to osc2 SAWS/PULSE
+10:40,1:31
+# drumA macro5 to osc1 SWP PWM/ENV PWM
+10:16,1:98
+# drumA macro6 to osc2 SWP PWM/ENV PWM
+10:42,1:99
+# drumA macro7 to NOISE
+10:17,1:102
+# drumA macro8 to KEY RANGE
+10:43,1:115
