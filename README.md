@@ -6,12 +6,15 @@ CC number mapping is defined commma(,) separated files.
 
 For example:
 ```
-10,20
-74,103
+:10,:20
+16:74,1:103
 ```
 
-Left value is MIDI IN CC number.
-Right value is MIDI OUT CC number.
+Left value is MIDI IN CC ch:number.
+Right value is MIDI OUT CC ch:number.
+
+When MIDI IN ch is blank, it's matching all channel.
+When MIDI OUT ch is blank, it's same to input channel.
 
 For executing this program:
 ```
